@@ -23,4 +23,4 @@ app:
 logging:
   level:
     root: INFO
-    org.chapchap.backend: INFO
+    org.chapchap.be: INFO
