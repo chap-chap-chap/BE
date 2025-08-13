@@ -1,5 +1,7 @@
 package org.chapchap.be.domain.auth.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.chapchap.be.domain.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Auth")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @Operation(summary = "회원가입", security = {})
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest req,
                                        HttpServletResponse res) {
@@ -33,7 +37,7 @@ public class AuthController {
         return ResponseEntity.ok(token);
     }
 
-
+    @Operation(summary = "로그인", security = {})
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req,
                                       HttpServletResponse res) {

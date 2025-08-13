@@ -24,3 +24,13 @@ logging:
   level:
     root: INFO
     org.chapchap.be: INFO
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    display-operation-id: true
+    tags-sorter: alpha
+    operations-sorter: method
+    doc-expansion: none
+    try-it-out-enabled: true
+    filter: true
