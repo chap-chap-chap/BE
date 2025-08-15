@@ -16,7 +16,11 @@ public class CorsConfig {
         CorsConfiguration cfg = new CorsConfiguration();
 
         // 개발용: 로컬 프론트 허용
-        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+        cfg.setAllowedOrigins(List.of(
+                "https://shallwewalk.kro.kr",
+                "https://www.shallwewalk.kro.kr",
+                "http://localhost:3000"
+        ));
 
         // 인증 쿠키/자격증명 허용 (프론트 fetch/XHR에 credentials: 'include' 필요)
         cfg.setAllowCredentials(true);
