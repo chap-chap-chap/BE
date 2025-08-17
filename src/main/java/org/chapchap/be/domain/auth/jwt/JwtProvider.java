@@ -31,7 +31,10 @@ public class JwtProvider {
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-        this.jwtParser = Jwts.parser().verifyWith(key).build();
+        this.jwtParser = Jwts.parser()
+                .verifyWith(key)
+                .clockSkewSeconds(60) // 만료 오차 - 60초 허용
+                .build();
     }
 
     public String createAccessToken(Long userId) {

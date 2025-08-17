@@ -21,6 +21,11 @@ app:
       access-exp-sec: ${JWT_ACCESS_EXP_SEC}
       refresh-exp-sec: ${JWT_REFRESH_EXP_SEC}
 
+  kakao:
+    local:
+      base-url: https://dapi.kakao.com
+      rest-api-key: ${KAKAO_REST_API_KEY}
+
 logging:
   level:
     root: INFO
