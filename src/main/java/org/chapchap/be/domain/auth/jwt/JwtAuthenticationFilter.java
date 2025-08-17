@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.chapchap.be.domain.user.entity.User;
 import org.chapchap.be.domain.user.service.UserService;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -37,7 +39,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        log.debug("Cookie header: {}", request.getHeader("Cookie"));
         String token = extractAccessToken(request);
+        log.debug("Resolved token? {}", token != null);
 
         // 토큰이 없으면 다음 필터로 (익명)
         if (token == null || token.isBlank()) {
