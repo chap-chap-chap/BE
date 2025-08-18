@@ -42,7 +42,8 @@
 
 ## 4️. 
 
-1. FastAPI 서버가 먼저 실행되어야 함 (`uvicorn api:app --reload`)
+1. FastAPI 서버가 먼저 실행되어야 함 (`python -m uvicorn nutrient_check_api:app --reload`)
 2. 요청/응답 JSON 구조 그대로 사용
 3. Swagger UI는 참고용, Java 호출 시 사용하지 않아도 됨
 
+http://127.0.0.1:8000/docs 접속, 테스트
