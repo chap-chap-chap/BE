@@ -55,6 +55,13 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", req);
     }
 
+
+    /* 404 ── 경로 없음 */
+    @ExceptionHandler(NoRouteFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoRoute(NoRouteFoundException e, HttpServletRequest req) {
+        return build(HttpStatus.NOT_FOUND, e.getMessage(), req);
+    }
+
     /* 409 ── 데이터 충돌(유니크 키 중복 등) */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException e, HttpServletRequest req) {
@@ -62,23 +69,21 @@ public class GlobalExceptionHandler {
     }
 
     /* 외부 API 에러 */
-    @ExceptionHandler(NoRouteFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoRoute(NoRouteFoundException e, HttpServletRequest req) {
-        return build(HttpStatus.NOT_FOUND, e.getMessage(), req);
-    }
-
-    @ExceptionHandler(GoogleApiException.class)
-    public ResponseEntity<ErrorResponse> handleExternal(GoogleApiException e, HttpServletRequest req) {
-        HttpStatus status = HttpStatus.resolve(e.getStatus());
-        if (status == null) status = HttpStatus.BAD_GATEWAY;
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<ErrorResponse> handleExternal(ExternalApiException e, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(e.getStatus()) != null
+                ? HttpStatus.valueOf(e.getStatus())
+                : HttpStatus.BAD_GATEWAY;
         return build(status, e.getMessage(), req);
     }
 
+    /* WebClient의 상태코드 동반 오류 */
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<ErrorResponse> handleWebClient(WebClientResponseException e, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(e.getStatusCode().value()) != null
+                ? HttpStatus.valueOf(e.getStatusCode().value())
+                : HttpStatus.BAD_GATEWAY;
         String msg = "외부 호출 실패: " + e.getResponseBodyAsString();
-        HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
-        if (status == null) status = HttpStatus.BAD_GATEWAY;
         return build(status, msg, req);
     }
 
@@ -94,6 +99,10 @@ public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String msg, HttpServletRequest req) {
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(status.value(), msg, req.getRequestURI(), nowIso()));
+                .body(new ErrorResponse(
+                        status.value(),
+                        msg,
+                        req.getRequestURI(),
+                        nowIso()));
     }
 }
