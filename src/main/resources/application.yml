@@ -4,22 +4,30 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://mysql_chap_chap:3306/${MYSQL_DATABASE}
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/chap_db
+    username: chap_user
+    password: chap_pw 
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update # 배포 시 변경
+
+
+docker:
+  compose:
+    enabled: false
+
+jpa:
+  database-platform: org.hibernate.dialect.MySQL8Dialect
+  hibernate:
+    ddl-auto: update # 배포 시 변경
+
+
 
 app:
   auth:
     jwt:
-      secret: ${JWT_SECRET}       # 256bit 이상
-      access-exp-sec: ${JWT_ACCESS_EXP_SEC}
-      refresh-exp-sec: ${JWT_REFRESH_EXP_SEC}
+      secret: PUKKZtxBepIAHyTvGiLchqESyBlumrofLcwsQe7phdA=     # 256bit 이상
+      access-exp-sec: 3600
+      refresh-exp-sec: 86400
 
   kakao:
     local:
