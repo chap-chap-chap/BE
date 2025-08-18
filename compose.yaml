@@ -47,6 +47,21 @@ services:
     networks:
       - network_chap_chap
 
+  # FastAPI
+  fastapi:
+    build:
+      context: festapi-app
+    container_name: fastapi_chap_chap
+    ports:
+      - "8077:8000"
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - network_chap_chap
+
 networks:
   network_chap_chap:
     driver: bridge
