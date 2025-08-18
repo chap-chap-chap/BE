@@ -21,10 +21,10 @@ app:
       access-exp-sec: ${JWT_ACCESS_EXP_SEC}
       refresh-exp-sec: ${JWT_REFRESH_EXP_SEC}
 
-  kakao:
-    local:
-      base-url: https://dapi.kakao.com
-      rest-api-key: ${KAKAO_REST_API_KEY}
+  google:
+    routes:
+      base-url: https://routes.googleapis.com
+      api-key: ${GOOGLE_MAPS_API_KEY}
 
 logging:
   level:

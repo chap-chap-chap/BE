@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.OffsetDateTime;
 
@@ -60,6 +61,27 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "데이터 충돌이 발생했습니다.", req);
     }
 
+    /* 외부 API 에러 */
+    @ExceptionHandler(NoRouteFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoRoute(NoRouteFoundException e, HttpServletRequest req) {
+        return build(HttpStatus.NOT_FOUND, e.getMessage(), req);
+    }
+
+    @ExceptionHandler(GoogleApiException.class)
+    public ResponseEntity<ErrorResponse> handleExternal(GoogleApiException e, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(e.getStatus());
+        if (status == null) status = HttpStatus.BAD_GATEWAY;
+        return build(status, e.getMessage(), req);
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ErrorResponse> handleWebClient(WebClientResponseException e, HttpServletRequest req) {
+        String msg = "외부 호출 실패: " + e.getResponseBodyAsString();
+        HttpStatus status = HttpStatus.resolve(e.getStatusCode().value());
+        if (status == null) status = HttpStatus.BAD_GATEWAY;
+        return build(status, msg, req);
+    }
+
     /* 500 ── 잡히지 않은 예외 */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest req) {
@@ -68,12 +90,10 @@ public class GlobalExceptionHandler {
     }
 
     /* ---------- 공통 builder ---------- */
+    private String nowIso() { return OffsetDateTime.now().toString(); }
+
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String msg, HttpServletRequest req) {
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(
-                        status.value(),
-                        msg,
-                        req.getRequestURI(),
-                        OffsetDateTime.now().toString()));
+                .body(new ErrorResponse(status.value(), msg, req.getRequestURI(), nowIso()));
     }
 }
