@@ -53,7 +53,7 @@ public class PythonApiClient {
 
     // 테스트용 main
     public static void main(String[] args) {
-        PythonApiClient client = new PythonApiClient("http://fastapi_chap_chap:8000");
+        PythonApiClient client = new PythonApiClient("http://fastapi:8000");
         String response = client.checkNutrient("단백질", 50.0);
         System.out.println("서버 응답: " + response);
     }
