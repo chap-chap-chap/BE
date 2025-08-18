@@ -10,7 +10,7 @@ app = FastAPI()
 
 # DB 연결
 conn = pymysql.connect(
-    host='localhost',
+    host=os.getenv('MYSQL_HOST', 'localhost'),
     user=os.getenv('MYSQL_USER'),
     password=os.getenv('MYSQL_PASSWORD'),
     db=os.getenv('MYSQL_DATABASE'),
