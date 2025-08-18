@@ -1,4 +1,4 @@
-package global;
+package org.chapchap.be.global.config;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
