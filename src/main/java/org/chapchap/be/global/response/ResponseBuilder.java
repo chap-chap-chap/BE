@@ -1,4 +1,4 @@
-package org.chapchap.be.global.util;
+package org.chapchap.be.global.response;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

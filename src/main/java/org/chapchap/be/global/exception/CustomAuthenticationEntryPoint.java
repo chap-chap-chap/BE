@@ -3,7 +3,7 @@ package org.chapchap.be.global.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.chapchap.be.global.util.ResponseMessage;
+import org.chapchap.be.global.response.ResponseMessage;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;

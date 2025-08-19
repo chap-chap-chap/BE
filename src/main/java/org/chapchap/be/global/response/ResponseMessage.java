@@ -1,4 +1,4 @@
-package org.chapchap.be.global.util;
+package org.chapchap.be.global.response;
 
 public record ResponseMessage(
         int status,          // HTTP status code

@@ -2,7 +2,7 @@ package org.chapchap.be.global.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.chapchap.be.global.util.ResponseMessage;
+import org.chapchap.be.global.response.ResponseMessage;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
