@@ -40,10 +40,11 @@ public class OpenApiConfig {
                         .version("v1")
                         .description("Auth(JWT: Bearer/Cookie) + Sample endpoints"))
                 .components(components)
-                // 로컬/배포 서버 목록
-//                .servers(List.of(
-//                        new Server().url("http://localhost:8078").description("Local")
-//                ))
+                // 배포/로컬 서버 목록
+                .servers(List.of(
+                        new Server().url("https://shallwewalk.kro.kr").description("Prod"),
+                        new Server().url("http://localhost:8078").description("Local")
+                ))
                 // 전역 SecurityRequirement (인증 헤더/쿠키 중 하나 충족하면 통과)
                 .addSecurityItem(new SecurityRequirement().addList(BEARER))
                 .addSecurityItem(new SecurityRequirement().addList(COOKIE));
