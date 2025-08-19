@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.chapchap.be.domain.auth.dto.LoginRequest;
 import org.chapchap.be.domain.auth.dto.SignupRequest;
 import org.chapchap.be.domain.auth.dto.TokenResponse;
-import org.chapchap.be.domain.auth.jwt.CookieUtil;
+import org.chapchap.be.global.security.CookieUtil;
 import org.chapchap.be.domain.auth.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

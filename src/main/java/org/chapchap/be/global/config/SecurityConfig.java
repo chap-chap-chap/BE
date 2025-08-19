@@ -1,8 +1,8 @@
 package org.chapchap.be.global.config;
 
 import lombok.RequiredArgsConstructor;
-import org.chapchap.be.domain.auth.jwt.JwtAuthenticationFilter;
-import org.chapchap.be.domain.auth.jwt.JwtProvider;
+import org.chapchap.be.global.security.JwtAuthenticationFilter;
+import org.chapchap.be.global.security.JwtProvider;
 import org.chapchap.be.domain.user.service.UserService;
 import org.chapchap.be.global.exception.CustomAccessDeniedHandler;
 import org.chapchap.be.global.exception.CustomAuthenticationEntryPoint;

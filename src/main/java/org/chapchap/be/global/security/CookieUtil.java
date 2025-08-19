@@ -1,4 +1,4 @@
-package org.chapchap.be.domain.auth.jwt;
+package org.chapchap.be.global.security;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +10,7 @@ public class CookieUtil {
     public static void addHttpOnlyCookie(HttpServletResponse res, String name, String value, int maxAgeSec) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);        // prod만 true, dev/local은 false
+        cookie.setSecure(false);        // prod만 true, dev/local은 false
         cookie.setPath("/");
         cookie.setMaxAge(maxAgeSec);
         res.addCookie(cookie);

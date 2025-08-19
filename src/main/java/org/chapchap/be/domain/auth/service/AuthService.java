@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.chapchap.be.domain.auth.dto.SignupRequest;
 import org.chapchap.be.domain.auth.dto.TokenResponse;
-import org.chapchap.be.domain.auth.jwt.JwtProvider;
+import org.chapchap.be.global.security.JwtProvider;
 import org.chapchap.be.domain.user.entity.User;
 import org.chapchap.be.domain.user.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;

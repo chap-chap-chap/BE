@@ -1,4 +1,4 @@
-package org.chapchap.be.domain.auth.jwt;
+package org.chapchap.be.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
