@@ -1,6 +1,6 @@
 server:
   port: 8080
-  forward-headers-strategy: native
+  forward-headers-strategy: framework
 
 spring:
   datasource:
@@ -15,27 +15,28 @@ spring:
       ddl-auto: update # 배포 시 변경
 
 app:
+  # 배포 환경
+  web:
+    cross-site: true    # 프론트/Swagger가 다른 도메인
+    cookie-domain: ".shallwewalk.kro.kr"  # 공통 상위 도메인
+  cors:
+    allowed-origins:
+      - "https://shallwewalk.kro.kr"
+      - "https://www.shallwewalk.kro.kr"
+
+#  # 로컬 환경
+#  web:
+#    cross-site: false   # 같은 오리진
+#    cookie-domain: ""   # 비워두면 도메인 지정 안 함(로컬)
+#  cors:
+#    allowed-origins:
+#      - "http://localhost:3000, http://localhost:8078"
+
   auth:
     jwt:
       secret: ${JWT_SECRET}       # 256bit 이상
       access-exp-sec: ${JWT_ACCESS_EXP_SEC}
       refresh-exp-sec: ${JWT_REFRESH_EXP_SEC}
-
-#    # 로컬 환경
-#    web:
-#      cross-site: false   # 같은 오리진
-#      cookie-domain: ""   # 비워두면 도메인 지정 안 함(로컬)
-#    cors:
-#      allowed-origins:
-#        - "http://localhost:3000, http://localhost:8078"
-
-      # 배포 환경
-    web:
-      cross-site: true    # 프론트/Swagger가 다른 도메인
-      cookie-domain: ".shallwewalk.kro.kr"  # 공통 상위 도메인
-    cors:
-      allowed-origins:
-        - "https://shallwewalk.kro.kr, https://www.shallwewalk.kro.kr"
 
   routes:
     ors:

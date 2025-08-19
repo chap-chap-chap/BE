@@ -4,22 +4,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CookieUtil {
 
-    private CookieUtil() {}
+    private final String cookieDomain;
 
-    @Value("${app.web.cookie-domain:}")
-    private static String cookieDomain;
+    public CookieUtil(@Value("${app.web.cookie-domain:}") String cookieDomain) {
+        this.cookieDomain = cookieDomain;
+    }
 
     /**
-     * 개발(HTTP, same-origin): SameSite=Lax, Secure=false
      * 운영(HTTPS, cross-site): SameSite=None, Secure=true
-     *
-     * @param crossSite  프론트가 다른 도메인에서 요청하면 true (예: app.example.com -> api.example.com)
+     * 동일 오리진이더라도 운영은 https 고정으로 Secure=true 권장
      */
-    public static void addAccessTokenCookie(HttpServletRequest req, HttpServletResponse res,
-                                            String name, String value, int maxAgeSec, boolean crossSite) {
+    public void addAccessTokenCookie(HttpServletRequest req, HttpServletResponse res,
+                                     String name, String value, int maxAgeSec, boolean crossSite) {
         boolean https = isSecure(req); // X-Forwarded-Proto 고려
         ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value)
                 .httpOnly(true)
@@ -27,13 +28,13 @@ public class CookieUtil {
                 .maxAge(maxAgeSec);
 
         if (crossSite) {
-            // 크로스 오리진은 반드시 None + Secure(브라우저 정책)
+            // 크로스 오리진은 반드시 None + Secure
             b.sameSite("None").secure(true);
             if (cookieDomain != null && !cookieDomain.isBlank()) {
-                b.domain(cookieDomain);
+                b.domain(cookieDomain); // 예: .shallwewalk.kro.kr
             }
         } else {
-            // 같은 오리진이면 Lax + (HTTP면 false, HTTPS면 true)
+            // 동일 오리진(운영 https): Lax + Secure(true)
             b.sameSite("Lax").secure(https);
         }
 
@@ -41,11 +42,8 @@ public class CookieUtil {
     }
 
     private static boolean isSecure(HttpServletRequest req) {
-        // 리버스 프록시(예: nginx) 뒤에서 HTTPS를 쓰면 여기선 http로 보일 수 있음 → 헤더로 판단
         String forwardedProto = req.getHeader("X-Forwarded-Proto");
-        if (forwardedProto != null) {
-            return "https".equalsIgnoreCase(forwardedProto);
-        }
+        if (forwardedProto != null) return "https".equalsIgnoreCase(forwardedProto);
         return req.isSecure();
     }
 }

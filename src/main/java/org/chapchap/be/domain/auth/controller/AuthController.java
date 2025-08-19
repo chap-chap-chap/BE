@@ -22,8 +22,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final CookieUtil cookieUtil;
 
-    @Value("${app.web.cross-site:false}")
+    @Value("${app.web.cross-site:true}")
     private boolean crossSite; // ! 환경에 따라 전환
 
     @Operation(summary = "회원가입", security = {})
@@ -32,10 +33,6 @@ public class AuthController {
                                     HttpServletRequest req, HttpServletResponse res) {
         authService.signup(reqBody);
         TokenResponse token = authService.login(reqBody.email(), reqBody.password());
-
-//        // 자동 로그인 후 토큰 발급
-//        CookieUtil.addAccessTokenCookie(req, res, "ACCESS_TOKEN", token.accessToken(), 60 * 15, crossSite);
-//        CookieUtil.addAccessTokenCookie(req, res, "REFRESH_TOKEN", token.refreshToken(), 60 * 60 * 24 * 14, crossSite);
 
         // ! 배포 시 변경 - 임시로 Authorization 헤더(Bearer) 허용
         // return ResponseEntity.ok("회원가입에 성공했습니다.");
@@ -49,8 +46,8 @@ public class AuthController {
         TokenResponse token = authService.login(reqBody.email(), reqBody.password());
 
         // 자동 로그인 후 토큰 발급
-        CookieUtil.addAccessTokenCookie(req, res, "ACCESS_TOKEN", token.accessToken(), 60 * 15, crossSite);
-        CookieUtil.addAccessTokenCookie(req, res, "REFRESH_TOKEN", token.refreshToken(), 60 * 60 * 24 * 14, crossSite);
+        cookieUtil.addAccessTokenCookie(req, res, "ACCESS_TOKEN", token.accessToken(), 60 * 15, crossSite);
+        cookieUtil.addAccessTokenCookie(req, res, "REFRESH_TOKEN", token.refreshToken(), 60 * 60 * 24 * 14, crossSite);
 
         // ! 배포 시 변경 - 임시로 Authorization 헤더(Bearer) 허용
         // return ResponseEntity.ok("로그인에 성공했습니다.");

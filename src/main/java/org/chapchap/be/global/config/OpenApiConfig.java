@@ -42,7 +42,7 @@ public class OpenApiConfig {
                 .components(components)
                 // 배포/로컬 서버 목록
                 .servers(List.of(
-                        new Server().url("https://shallwewalk.kro.kr").description("Prod"),
+                        new Server().url("https://www.shallwewalk.kro.kr").description("Prod"),
                         new Server().url("http://localhost:8078").description("Local")
                 ))
                 // 전역 SecurityRequirement (인증 헤더/쿠키 중 하나 충족하면 통과)
