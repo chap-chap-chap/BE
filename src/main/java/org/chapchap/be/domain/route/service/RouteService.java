@@ -33,7 +33,7 @@ public class RouteService {
 
     public RouteResponse computeWalk(RouteRequest req) {
         // ORS Directions v2: /v2/directions/foot-walking
-        // 1) ORS 호출로 경로 구하기
+        // ORS 호출로 경로 구하기
         Map<String, Object> body = Map.of(
                 "coordinates", List.of(
                         List.of(req.origin().longitude(), req.origin().latitude()),       // [lon, lat]
@@ -90,7 +90,7 @@ public class RouteService {
         long durationSeconds = Math.round(r.summary().duration());      // seconds
         String encodedPolyline = r.geometry();                          // encoded polyline
 
-        // 2) 사용자/프로필 조회
+        // 사용자/프로필 조회
         var user = userRepository.findByEmail(currentAuth().getName())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         var profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
@@ -101,12 +101,12 @@ public class RouteService {
                 profile != null ? profile.getHumanWeightKg() : null
         );
 
-        // 3) 강아지 목록 결정: 요청에 dogIds 있으면 그 목록, 없으면 본인 소유 전체(archived=false 가정)
+        // 함께 산책할 강아지 조회 - 강아지 이름 기준 조회, 비어 있으면 등록된 강아지 전체(archived=false 가정)
         List<Dog> dogsToCalc;
-        if (req.dogIds() != null && !req.dogIds().isEmpty()) {
-            dogsToCalc = req.dogIds().stream()
-                    .map(id -> dogRepository.findByIdAndOwnerId(id, user.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("강아지를 찾을 수 없습니다: id=" + id)))
+        if (req.dogNames() != null && !req.dogNames().isEmpty()) {
+            dogsToCalc = req.dogNames().stream()
+                    .map(name -> dogRepository.findByNameAndOwnerId(name, user.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("강아지를 찾을 수 없습니다: name=" + name)))
                     .toList();
         } else {
             dogsToCalc = user.getDogs().stream()
@@ -114,7 +114,7 @@ public class RouteService {
                     .toList();
         }
 
-        // 4) 강아지별 칼로리 계산
+        // 강아지별 칼로리 계산
         List<RouteResponse.DogCalorie> dogCalList = dogsToCalc.stream()
                 .map(d -> {
                     int daily = CalorieUtil.dogDailyKcal(d.getWeightKg(), d.getAgeMonths());
