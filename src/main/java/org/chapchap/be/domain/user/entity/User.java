@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-// User: 인증/계정
 @Entity
 @Getter @Builder
 @AllArgsConstructor @NoArgsConstructor
@@ -29,13 +26,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role; // USER/ADMIN
-
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = true)
-    private UserProfile profile;
-
-    // 강아지 컬렉션은 필요 시 LAZY로 접근
-    @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY)
-    private List<Dog> dogs = new ArrayList<>();
 
     private LocalDateTime lastLoginAt;
 
