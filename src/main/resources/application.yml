@@ -56,3 +56,4 @@ springdoc:
     doc-expansion: none
     try-it-out-enabled: true
     filter: true
+    with-credentials: true
