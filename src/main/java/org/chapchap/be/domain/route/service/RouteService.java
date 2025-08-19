@@ -3,6 +3,9 @@ package org.chapchap.be.domain.route.service;
 import org.chapchap.be.domain.route.dto.ORSDirectionsResponse;
 import org.chapchap.be.domain.route.dto.RouteRequest;
 import org.chapchap.be.domain.route.dto.RouteResponse;
+import org.chapchap.be.domain.route.entity.WalkDogCalorie;
+import org.chapchap.be.domain.route.entity.WalkRoute;
+import org.chapchap.be.domain.route.repository.WalkRouteRepository;
 import org.chapchap.be.domain.route.util.CalorieUtil;
 import org.chapchap.be.domain.dog.entity.Dog;
 import org.chapchap.be.domain.dog.repository.DogRepository;
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -29,26 +33,30 @@ public class RouteService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final DogRepository dogRepository;
+    private final WalkRouteRepository walkRouteRepository;
 
     public RouteService(@Qualifier("orsRoutesClient") WebClient orsRoutesClient,
                         UserRepository userRepository,
                         UserProfileRepository userProfileRepository,
-                        DogRepository dogRepository) {
+                        DogRepository dogRepository,
+                        WalkRouteRepository walkRouteRepository) {
         this.orsRoutesClient = orsRoutesClient;
         this.userRepository = userRepository;
         this.userProfileRepository = userProfileRepository;
         this.dogRepository = dogRepository;
+        this.walkRouteRepository = walkRouteRepository;
     }
 
+    @Transactional
     public RouteResponse computeWalk(RouteRequest req) {
         // ORS Directions v2: /v2/directions/foot-walking
-        // ORS 호출로 경로 구하기
+        // ORS 호출
         Map<String, Object> body = Map.of(
                 "coordinates", List.of(
-                        List.of(req.origin().longitude(), req.origin().latitude()),       // [lon, lat]
+                        List.of(req.origin().longitude(), req.origin().latitude()),
                         List.of(req.destination().longitude(), req.destination().latitude())
                 ),
-                "instructions", false,                 // turn-by-turn 불필요
+                "instructions", false,
                 "geometry", true,
                 "elevation", false,
                 "preference", "recommended",
@@ -99,7 +107,7 @@ public class RouteService {
         long durationSeconds = Math.round(r.summary().duration());      // seconds
         String encodedPolyline = r.geometry();                          // encoded polyline
 
-        // 사용자/프로필 조회
+        // 사용자/프로필
         var user = userRepository.findByEmail(currentAuth().getName())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         var profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
@@ -110,7 +118,7 @@ public class RouteService {
                 profile != null ? profile.getHumanWeightKg() : null
         );
 
-        // 함께 산책할 강아지 조회 - 강아지 이름 기준 조회, 비어 있으면 등록된 강아지 전체(archived=false 가정)
+        // 강아지 목록 - 강아지 이름 기준 조회, 비어 있으면 등록된 강아지 전체(archived=false 가정)
         List<Dog> dogsToCalc;
         if (req.dogNames() != null && !req.dogNames().isEmpty()) {
             dogsToCalc = req.dogNames().stream()
@@ -123,7 +131,7 @@ public class RouteService {
                     .toList();
         }
 
-        // 강아지별 칼로리 계산
+        // 강아지별 칼로리
         List<RouteResponse.DogCalorie> dogCalList = dogsToCalc.stream()
                 .map(d -> {
                     int daily = CalorieUtil.dogDailyKcal(d.getWeightKg(), d.getAgeMonths());
@@ -134,6 +142,36 @@ public class RouteService {
                 })
                 .toList();
 
+        // DB 저장 (헤더 + 디테일)
+        WalkRoute route = WalkRoute.builder()
+                .owner(user)
+                .originLat(req.origin().latitude())
+                .originLng(req.origin().longitude())
+                .destLat(req.destination().latitude())
+                .destLng(req.destination().longitude())
+                .distanceMeters(distanceMeters)
+                .durationSeconds(durationSeconds)
+                .encodedPolyline(encodedPolyline)
+                .humanDailyCaloriesKcal(humanDaily)
+                .humanWalkCaloriesKcal(humanWalk)
+                .build();
+
+        dogCalList.forEach(dc -> {
+            route.addDogCalorie(
+                    WalkDogCalorie.builder()
+                            .dogId(dc.dogId())           // null 허용 가능
+                            .dogName(dc.name())
+                            .ageMonths(dc.ageMonths())
+                            .weightKg(dc.weightKg())
+                            .dailyCaloriesKcal(dc.dogDailyCaloriesKcal())
+                            .walkCaloriesKcal(dc.dogWalkCaloriesKcal())
+                            .build()
+            );
+        });
+
+        walkRouteRepository.save(route); // cascade로 디테일까지 저장
+
+        // 6) 응답은 기존과 동일
         return new RouteResponse(
                 distanceMeters,
                 durationSeconds,
