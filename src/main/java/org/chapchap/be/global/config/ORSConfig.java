@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class ORSConfig {
 
-    @Bean
+    @Bean(name = "orsRoutesClient")
     public WebClient orsRoutesClient(
             @Value("${app.routes.ors.base-url}") String baseUrl,
             @Value("${app.routes.ors.api-key}") String apiKey

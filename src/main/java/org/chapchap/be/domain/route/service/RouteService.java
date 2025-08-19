@@ -1,6 +1,5 @@
 package org.chapchap.be.domain.route.service;
 
-import lombok.RequiredArgsConstructor;
 import org.chapchap.be.domain.route.dto.ORSDirectionsResponse;
 import org.chapchap.be.domain.route.dto.RouteRequest;
 import org.chapchap.be.domain.route.dto.RouteResponse;
@@ -11,6 +10,7 @@ import org.chapchap.be.domain.user.repository.UserProfileRepository;
 import org.chapchap.be.domain.user.repository.UserRepository;
 import org.chapchap.be.global.exception.ExternalApiException;
 import org.chapchap.be.global.exception.NoRouteFoundException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,13 +23,22 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class RouteService {
 
     private final WebClient orsRoutesClient;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final DogRepository dogRepository;
+
+    public RouteService(@Qualifier("orsRoutesClient") WebClient orsRoutesClient,
+                        UserRepository userRepository,
+                        UserProfileRepository userProfileRepository,
+                        DogRepository dogRepository) {
+        this.orsRoutesClient = orsRoutesClient;
+        this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.dogRepository = dogRepository;
+    }
 
     public RouteResponse computeWalk(RouteRequest req) {
         // ORS Directions v2: /v2/directions/foot-walking
