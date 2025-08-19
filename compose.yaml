@@ -41,6 +41,8 @@ services:
       JWT_REFRESH_EXP_SEC: ${JWT_REFRESH_EXP_SEC}
       ORS_BASE_URL: ${ORS_BASE_URL}
       ORS_API_KEY: ${ORS_API_KEY}
+      GOOGLE_MAPS_BASE_URL: ${GOOGLE_MAPS_BASE_URL}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
     depends_on:
       mysql:
         condition: service_healthy

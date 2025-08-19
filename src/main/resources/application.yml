@@ -43,6 +43,11 @@ app:
       base-url: ${ORS_BASE_URL}
       api-key: ${ORS_API_KEY}
 
+  google:
+    places:
+      base-url: ${GOOGLE_MAPS_BASE_URL}
+      api-key: ${GOOGLE_MAPS_API_KEY}
+
 logging:
   level:
     root: INFO
