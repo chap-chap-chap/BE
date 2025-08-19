@@ -3,6 +3,7 @@ package org.chapchap.be.global.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.chapchap.be.global.util.ResponseMessage;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -27,7 +28,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         log.warn("[403] path={}, reason={}", req.getRequestURI(), ex.getMessage());
 
-        ErrorResponse body = new ErrorResponse(
+        ResponseMessage body = new ResponseMessage(
                 403,
                 "접근 권한이 없습니다.",
                 req.getRequestURI(),

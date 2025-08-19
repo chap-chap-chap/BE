@@ -2,6 +2,7 @@ package org.chapchap.be.global.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.chapchap.be.global.util.ResponseMessage;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +24,12 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     /* 400 ── 비즈니스/검증 오류 */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleIllegalArgument(IllegalArgumentException e, HttpServletRequest req) {
         return build(HttpStatus.BAD_REQUEST, e.getMessage(), req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleValidationErrors(MethodArgumentNotValidException e, HttpServletRequest req) {
         String msg = e.getBindingResult().getFieldErrors().stream()
                 .map(f -> f.getField() + ": " + f.getDefaultMessage())
                 .collect(Collectors.joining(", "));
@@ -36,14 +37,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleTypeMismatch(MethodArgumentTypeMismatchException e, HttpServletRequest req) {
         String msg = "파라미터 타입이 올바르지 않습니다: " + e.getName();
         return build(HttpStatus.BAD_REQUEST, msg, req);
     }
 
     /* 401 ── 인증 실패(아이디/비번 오류 등) */
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
-    public ResponseEntity<ErrorResponse> handleAuthFail(RuntimeException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleAuthFail(RuntimeException e, HttpServletRequest req) {
         // 보안상 세부 사유 노출 금지: 통일된 메시지
         // 로그인 실패는 항상 같은 문구(“이메일 또는 비밀번호가 올바르지 않습니다.”)로 통일해서 정보 누출 최소화.
         return build(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다.", req);
@@ -51,26 +52,26 @@ public class GlobalExceptionHandler {
 
     /* 403 ── 인가 실패(권한 부족). 보통 AccessDeniedHandler가 처리하지만, 안전망으로 둠 */
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleAccessDenied(AccessDeniedException e, HttpServletRequest req) {
         return build(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.", req);
     }
 
 
     /* 404 ── 경로 없음 */
     @ExceptionHandler(NoRouteFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoRoute(NoRouteFoundException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleNoRoute(NoRouteFoundException e, HttpServletRequest req) {
         return build(HttpStatus.NOT_FOUND, e.getMessage(), req);
     }
 
     /* 409 ── 데이터 충돌(유니크 키 중복 등) */
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleDataIntegrity(DataIntegrityViolationException e, HttpServletRequest req) {
         return build(HttpStatus.CONFLICT, "데이터 충돌이 발생했습니다.", req);
     }
 
     /* 외부 API 에러 */
     @ExceptionHandler(ExternalApiException.class)
-    public ResponseEntity<ErrorResponse> handleExternal(ExternalApiException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleExternal(ExternalApiException e, HttpServletRequest req) {
         HttpStatus status = HttpStatus.resolve(e.getStatus()) != null
                 ? HttpStatus.valueOf(e.getStatus())
                 : HttpStatus.BAD_GATEWAY;
@@ -79,7 +80,7 @@ public class GlobalExceptionHandler {
 
     /* WebClient의 상태코드 동반 오류 */
     @ExceptionHandler(WebClientResponseException.class)
-    public ResponseEntity<ErrorResponse> handleWebClient(WebClientResponseException e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleWebClient(WebClientResponseException e, HttpServletRequest req) {
         HttpStatus status = HttpStatus.resolve(e.getStatusCode().value()) != null
                 ? HttpStatus.valueOf(e.getStatusCode().value())
                 : HttpStatus.BAD_GATEWAY;
@@ -89,7 +90,7 @@ public class GlobalExceptionHandler {
 
     /* 500 ── 잡히지 않은 예외 */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest req) {
+    public ResponseEntity<ResponseMessage> handleException(Exception e, HttpServletRequest req) {
         log.error("[Unhandled] {}", e.getMessage(), e);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.", req);
     }
@@ -97,9 +98,9 @@ public class GlobalExceptionHandler {
     /* ---------- 공통 builder ---------- */
     private String nowIso() { return OffsetDateTime.now().toString(); }
 
-    private ResponseEntity<ErrorResponse> build(HttpStatus status, String msg, HttpServletRequest req) {
+    private ResponseEntity<ResponseMessage> build(HttpStatus status, String msg, HttpServletRequest req) {
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(
+                .body(new ResponseMessage(
                         status.value(),
                         msg,
                         req.getRequestURI(),
