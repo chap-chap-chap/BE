@@ -27,6 +27,9 @@ public class User {
     @Column(nullable = false)
     private Role role; // USER/ADMIN
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, optional = true)
+    private UserProfile profile;
+
     private LocalDateTime lastLoginAt;
 
     public enum Role { USER, ADMIN }

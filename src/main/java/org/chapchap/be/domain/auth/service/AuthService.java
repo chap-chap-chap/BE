@@ -6,6 +6,8 @@ import org.chapchap.be.domain.auth.dto.SignupRequest;
 import org.chapchap.be.domain.auth.dto.TokenResponse;
 import org.chapchap.be.global.security.JwtProvider;
 import org.chapchap.be.domain.user.entity.User;
+import org.chapchap.be.domain.user.entity.UserProfile;
+import org.chapchap.be.domain.user.repository.UserProfileRepository;
 import org.chapchap.be.domain.user.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,11 +22,30 @@ public class AuthService {
     private final UserService userService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileRepository userProfileRepository;
 
     public void signup(SignupRequest req) {
-        User saved = userService.register(req.email(), req.password(), req.name());
+        // 사용자 생성
+        User user = userService.register(req.email(), req.password(), req.name());
 
-        log.info("[SIGNUP] success: userId={}, email={}", saved.getId(), saved.getEmail());
+        // 사용자 프로필 생성
+        var p = req.profile();
+        if (p == null) {
+            throw new IllegalArgumentException("프로필 정보가 없습니다.");
+        }
+
+        UserProfile.Sex sex = parseSexSafe(p.sex());
+
+        UserProfile profile = UserProfile.builder()
+                .user(user)
+                .humanWeightKg(p.weightKg())
+                .humanHeightCm(p.heightCm())
+                .humanAge(p.age())
+                .humanSex(sex)
+                .build();
+        userProfileRepository.save(profile);
+
+        log.info("[SIGNUP] success: userId={}, email={}", user.getId(), user.getEmail());
     }
 
     public TokenResponse login(String email, String password) {
@@ -49,5 +70,11 @@ public class AuthService {
         log.info("[LOGIN] success: userId={}, email={}", user.getId(), email);
 
         return new TokenResponse(access, refresh);
+    }
+
+    private UserProfile.Sex parseSexSafe(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try { return UserProfile.Sex.valueOf(raw.trim().toUpperCase()); }
+        catch (Exception ignore) { return null; }
     }
 }
