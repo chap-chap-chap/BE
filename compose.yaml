@@ -50,7 +50,8 @@ services:
   # FastAPI
   fastapi:
     build:
-      context: festapi-app
+      context: ./festapi-app
+      dockerfile: Dockerfile
     container_name: fastapi_chap_chap
     ports:
       - "8077:8000"
