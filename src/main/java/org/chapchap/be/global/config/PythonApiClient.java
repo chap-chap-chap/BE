@@ -1,5 +1,6 @@
 package org.chapchap.be.global.config;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -9,7 +10,6 @@ public class PythonApiClient {
 
     private final String baseUrl;
 
-    // 생성자: FastAPI 서버 주소
     public PythonApiClient(String baseUrl) {
         this.baseUrl = baseUrl;
     }
@@ -23,31 +23,45 @@ public class PythonApiClient {
      */
     public String checkNutrient(String nutrient, double value) {
         String endpoint = baseUrl + "/check_nutrient";
-        String jsonInput = String.format("{\"nutrient\": \"%s\", \"value\": %f}", nutrient, value);
+        String jsonInput = String.format("{\"nutrient\":\"%s\",\"value\":%s}", nutrient, value);
 
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(endpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(3000); // 3s
+            conn.setReadTimeout(5000);    // 5s
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true);
 
-            // JSON 데이터 전송
             try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInput.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
+                os.write(jsonInput.getBytes(StandardCharsets.UTF_8));
             }
 
-            // 응답 읽기
-            try (java.util.Scanner scanner = new java.util.Scanner(conn.getInputStream(), "UTF-8")) {
-                String response = scanner.useDelimiter("\\A").next();
-                return response;
+            int code = conn.getResponseCode();
+
+            // 2xx면 정상 스트림, 아니면 에러 스트림
+            InputStream is = (code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream();
+            if (is == null) {
+                // 에러 스트림이 null일 수도 있음
+                throw new RuntimeException("FastAPI returned " + code + " with empty body");
             }
 
+            try (java.util.Scanner sc = new java.util.Scanner(is, StandardCharsets.UTF_8)) {
+                String body = sc.useDelimiter("\\A").hasNext() ? sc.next() : "";
+                if (code >= 200 && code < 300) {
+                    return body;
+                } else {
+                    throw new RuntimeException("FastAPI error " + code + ": " + body);
+                }
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            // 여기서 null 리턴하지 말고 예외로 올려서 컨트롤러의 글로벌 에러 핸들링을 타게 하세요
+            throw new RuntimeException("Failed to call FastAPI: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) conn.disconnect();
         }
     }
 

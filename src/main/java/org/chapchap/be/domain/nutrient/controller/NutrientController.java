@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class NutrientController {
 
-    private final PythonApiClient pythonApiClient = new PythonApiClient("http://fastapi:8000");
+    private final PythonApiClient pythonApiClient;
 
     @Operation(summary = "사료 영양소 체크")
     @PostMapping("/check_nutrient")
