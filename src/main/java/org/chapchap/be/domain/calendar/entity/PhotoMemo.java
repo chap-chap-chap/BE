@@ -1,5 +1,6 @@
 package org.chapchap.be.domain.calendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,5 +25,6 @@ public class PhotoMemo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calendar_id", nullable = false)
+    @JsonIgnore
     private Calendar calendar;
 }
