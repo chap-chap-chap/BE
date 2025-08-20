@@ -3,3 +3,4 @@ uvicorn
 pandas
 pymysql
 python-dotenv
+SQLAlchemy>=2.0

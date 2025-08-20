@@ -30,7 +30,10 @@ app:
 #    cookie-domain: ""   # 비워두면 도메인 지정 안 함(로컬)
 #  cors:
 #    allowed-origins:
-#      - "http://localhost:3000, http://localhost:8078"
+#      - "http://localhost:8078"
+
+  python:
+    base-url: ${PYTHON_BASE_URL}
 
   auth:
     jwt:
